@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Game Of Life </title>
+    <meta charset='utf-8'>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        #envInput { 
+            border-spacing: 0px;
+            margin: auto;
+            padding: 10px;
+        }
+        #board td {
+            border: 1px solid black; 
+            border-spacing: 0px;
+            padding: 5px;
+        }
+        #board {
+            margin: auto;
+        }
+        #envInput td {
+            border-spacing: 0px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1> Game of Life </h1>
+    <table id ="envInput">
+        <tr>
+            <td> <input type='text' id='row' placeholder="# of rows"> 
+            <td> <input type='text' id='col'  placeholder="# of cols">
+        <tr>
+            <td> <input type='number' id='timer' placeholder="milliseconds"> 
+            <td> Generation Interval 
+        <tr>
+            <td colspan=2 align=center><input id="clickMe" type="button" value="Create Enivorment" onclick="initEnv();">
+        <tr>
+            <td colspan=2 align=center><input id="clickMe" type="button" value="Start Life Cycle" onclick="func();">
+    </table>
+<script>
+    var table, rows, cols, table;
+    initEnv();
+    // make game out of this where you much m,athc a later genration
+    function initEnv(){
+        if(table) deleteElement(table);
+        rows = document.getElementById('row').value ? document.getElementById('row').value : 50;
+        cols = document.getElementById('col').value ? document.getElementById('col').value : 50;
+        table = createTable(rows, cols);
+        table.setAttribute("id", "board");
+        table.setAttribute("cellspacing", "0");
+    }
+    // this function takes an element recursivly deletes it
+    function deleteElement(e) {
+        while (e.firstChild) {
+            deleteElement(e.firstChild);
+        }
+        e.remove();
+    }
+    function createTable(w, l) 
+    {
+        var tbl = document.createElement("table");
+        var i, j;
+        for(var i = 0; i < w; i++) {
+            var tr = document.createElement("tr");
+            for(var j = 0; j < l; j++) {
+                var td = document.createElement("td");
+                td.setAttribute("onclick", "swapState(event)");
+                tr.appendChild(td);
+            }
+            tbl.appendChild(tr);
+        }
+        document.body.appendChild(tbl);
+        return tbl;
+    }
+    
+    function func() 
+    {
+        var r, c, count, cell;
+        // empty array that will later be filled with the cells that need switched from dead to alive or vis versa
+        var a = [];
+        for(r = 0; r < rows; r++) {
+            for(c = 0; c < cols; c++) {
+                var cell  = table.rows[r].cells[c];
+                var count = liveNeigbours(cell, r, c);
+                if(isAlive(cell)) {
+                    if(count == 2 || count == 3)  continue;
+                    else a.push([r,c]);
+                }
+                else {
+                    if(count == 3) a.push([r,c]);
+                }
+            }
+        }
+        swapStates(a);
+        setTimeout(func, document.getElementById('row').value ? document.getElementById('timer').value : 1000);
+    }
+    
+    // takes an array that has all the states that needs changed and flips their value 
+    function swapStates(a)
+    {
+        for(var i = 0; i < a.length; i++) {
+            if(isAlive(table.rows[a[i][0]].cells[a[i][1]])) kill(table.rows[a[i][0]].cells[a[i][1]]);
+            else revive(table.rows[a[i][0]].cells[a[i][1]]);
+        }
+    }
+    
+    
+    function swapState(e)
+    {
+            var cell = e.target;
+            if(isAlive(cell)) kill(cell);
+            else revive(cell);
+    }
+    
+    
+    function beep() {
+        console.log("beep");
+    }
+    
+    // checks if the cell is alive or dead
+    function isAlive(cell)
+    {
+        if(cell.style.backgroundColor == 'black') return 1;
+        else return 0;
+    }
+    
+    // Sets the cell as alive
+    function revive(cell) 
+    {
+        cell.setAttribute('style', 'background-color:black;');
+    }
+    
+    // Sets the cell as dead
+    function kill(cell) 
+    {
+        cell.setAttribute('style', 'background-color:white;');
+    }
+    
+    
+    function liveNeigbours(cell, r, c)
+    {
+        var count = 0;
+        if(r - 1 != -1){
+            if(c - 1 != -1) if(isAlive(table.rows[r-1].cells[c-1])) count++;
+            if(c + 1 < cols) if(isAlive(table.rows[r-1].cells[c+1])) count++;
+            if(isAlive(table.rows[r-1].cells[c])) count++;
+        }
+        if(r + 1 < rows){
+            if(c - 1 != -1)  if(isAlive(table.rows[r+1].cells[c-1])) count++;
+            if(c + 1 < cols) if(isAlive(table.rows[r+1].cells[c+1])) count++;
+            if(isAlive(table.rows[r+1].cells[c])) count++;
+        }
+        
+        if(c - 1 != -1) if(isAlive(table.rows[r].cells[c-1])) count++;
+        if(c + 1 < cols) if(isAlive(table.rows[r].cells[c+1])) count++;
+        return count;
+    }
+</script>
+<table>
+    <tr>
+        <th style="text-align: left; font-size: 200%;"> Info
+    <tr>
+        <td> Click any cell to switch it to alive or dead
+    <tr>
+        <td> Rules of the game are life are as follows :
+    <tr>
+        <td> 1: Any live cell with two or three live neighbours survives.
+    <tr>
+        <td> 2: Any dead cell with three live neighbours becomes a live cell.
+    <tr>
+        <td> 3: All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+    <tr>
+        <td> <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life"> Game of Life Wikipedia Article</a>
+</table>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="/__/firebase/7.21.1/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="/__/firebase/7.21.1/firebase-analytics.js"></script>
+
+<!-- Initialize Firebase -->
+<script src="/__/firebase/init.js"></script>
+</body>
+</html>
